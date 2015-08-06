@@ -1,0 +1,85 @@
+﻿<Window x:Class="Decryption.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:loc="clr-namespace:Decryption.Views"
+        xmlns:vms="clr-namespace:Decryption.ViewModels"
+        xmlns:common="clr-namespace:Decryption.Common"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        d:DataContext="{d:DesignInstance Type=vms:MockDecrypterViewModel, IsDesignTimeCreatable=True}"
+        Title="MainWindow" Height="600" Width="800" Background="PaleGreen">
+    
+    <Window.Resources>
+        <common:SelectedDecrypterToVisiblityConverter x:Key="selectedDecrypterToVisiblityConverter" />
+    </Window.Resources>
+        
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <ListBox ItemsSource="{Binding Decrypters}" Name="MyListBox"
+                     SelectedItem="{Binding CurrentDecrypter}"
+                     Margin="0,10">
+                    <ListBox.Resources>
+                    <ControlTemplate x:Key="ListBoxItem" TargetType="ListBoxItem">
+                        <StackPanel>
+                            <ContentPresenter/>
+                        </StackPanel>
+                    </ControlTemplate>
+
+                    <Style TargetType="ListBoxItem">
+                        <Setter Property="Template" Value="{StaticResource ListBoxItem}"/>
+                    </Style>
+                </ListBox.Resources>
+                <ListBox.Template>
+                    <ControlTemplate>
+                        <ItemsPresenter/>
+                    </ControlTemplate>
+                </ListBox.Template>
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <RadioButton Content="{Binding}"
+                                         IsEnabled="True"
+                                         IsChecked="{Binding Path=IsSelected, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}"
+                                         Margin="10,2,20,2"/>
+                        </Grid>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Grid Grid.Column="1" Name="DecryptionUserControl">
+                <loc:CaesarShiftSetupView DataContext="{Binding CurrentDecrypterViewModel, Mode=TwoWay}"
+                                          Visibility="{Binding Name, Converter={StaticResource selectedDecrypterToVisiblityConverter}, ConverterParameter=Caesar}" />
+                <loc:XORSetupView DataContext="{Binding CurrentDecrypterViewModel, Mode=TwoWay}"
+                                  Visibility="{Binding Name, Converter={StaticResource selectedDecrypterToVisiblityConverter}, ConverterParameter=XOR}" />
+                <loc:MonoAlphaSetupView DataContext="{Binding CurrentDecrypterViewModel, Mode=TwoWay}"
+                                  Visibility="{Binding Name, Converter={StaticResource selectedDecrypterToVisiblityConverter}, ConverterParameter=MonoAlpha}" />
+            </Grid>
+        </Grid>
+        <Grid Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Label Grid.Row="0" Content="Encrypted Text" />
+            <TextBox Grid.Row="1" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto">
+                <TextBox.Text>
+                    <Binding Path="EncryptedText" UpdateSourceTrigger="PropertyChanged"/>
+                </TextBox.Text>
+            </TextBox>
+            <Label Grid.Row="2" Content="Decrypted Text" />
+            <TextBox Grid.Row="3" Text="{Binding Path=DecryptedText, Mode=OneWay}" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" IsReadOnly="True"/>
+        </Grid>
+    </Grid>
+</Window>

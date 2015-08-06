@@ -1,0 +1,32 @@
+﻿<UserControl x:Class="Decryption.Views.XORSetupView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             mc:Ignorable="d" >
+    <StackPanel Orientation="Horizontal">
+        <Label Content="Key: " Height="30" />
+        <TextBox Width="50" Height="30" Margin="2" Text="{Binding Path=Key, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <Button Content="Find Key" Height="30" Command="{Binding FindKeyCommand}" />
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+            <Label Content="Auto find key limits" Grid.ColumnSpan="3" />
+            <TextBox Grid.Row="1" Grid.Column="0" Text="{Binding Path=KeyAutoSearchLowerBound}" Margin="15,0,0,0" Height="22" VerticalAlignment="Top" />
+            <Label Grid.Row="1" Grid.Column="1" Content="-" HorizontalAlignment="Center" />
+            <TextBox Grid.Row="1" Grid.Column="2" Text="{Binding Path=KeyAutoSearchUpperBound}" Margin="0,0,15,0" Height="22" VerticalAlignment="Top" />
+        </Grid>
+        <StackPanel Orientation="Vertical">
+            <Label Content="Words to find (comma separated)" />
+            <TextBox Text="{Binding Path=WordsToFind}" Margin="10" Height="22" VerticalAlignment="Top" />
+        </StackPanel>
+        <Button Content="Load sample" Height="30" Command="{Binding LoadSampleTextCommand}" Margin="5" />
+    </StackPanel>
+</UserControl>

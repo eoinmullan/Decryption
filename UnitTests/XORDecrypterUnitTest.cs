@@ -53,8 +53,10 @@ namespace DecryptionUnitTests {
             byte upperKeyBound = 123;
             var wordsToFind = new string[] { "one", "two", "three" };
             xorKeyFinderFactory.BackToRecord();
-            xorKeyFinderFactory.Expect(x => x.Create(encryptedText, textHelper, lowerKeyBound, upperKeyBound, wordsToFind));
+            xorKeyFinderFactory.Expect(x => x.Create(encryptedText, textHelper, lowerKeyBound, upperKeyBound, wordsToFind)).Return(xorKeyFinder);
             xorKeyFinderFactory.Replay();
+            var dummyKey = new byte[1];
+            xorKeyFinder.Stub(x => x.FindNextKeyAsync(null, s => string.Empty, b => { })).IgnoreArguments().Return(Task.FromResult<byte[]>(dummyKey));
 
             target.FindKey(lowerKeyBound, upperKeyBound, wordsToFind);
 
@@ -70,17 +72,19 @@ namespace DecryptionUnitTests {
 
             target.FindKey(1, 2);
 
-            Assert.AreEqual(expectedKey, target.Key);
+            Assert.AreSame(expectedKey, target.Key);
         }
 
         [TestMethod]
         public void ShouldPassKeyToXORKeyFinder() {
             var dummyKey = new byte[1];
             target.Key = dummyKey;
-            xorKeyFinder.Expect(x => x.FindNextKeyAsync(
-                Arg<byte[]>.Is.Equal(dummyKey),
-                Arg<Func<string, string>>.Is.Anything,
-                Arg<Action<byte[]>>.Is.Anything));
+            xorKeyFinder
+                .Expect(x => x.FindNextKeyAsync(
+                    Arg<byte[]>.Is.Equal(dummyKey),
+                    Arg<Func<string, string>>.Is.Anything,
+                    Arg<Action<byte[]>>.Is.Anything))
+                .Return(Task.FromResult<byte[]>(dummyKey));
 
             target.FindKey(1, 2);
 
@@ -89,15 +93,15 @@ namespace DecryptionUnitTests {
 
         [TestMethod]
         public void ShouldPassDecryptionDelegateToXORKeyFinder() {
+            var dummyKey = new byte[] {23, 32, 42, 200, 219 };
             Func<string, string> decryptDelegatePassedToKeyFinder = null;
             xorKeyFinder.Stub(x => x.FindNextKeyAsync(null, s => s, b => { }))
                 .IgnoreArguments()
                 .WhenCalled(x => {
                     decryptDelegatePassedToKeyFinder = x.Arguments[1] as Func<string, string>;
                 })
-                .Return(null);
+                .Return(Task.FromResult<byte[]>(dummyKey));
 
-            SetTargetKey(23, 32, 42, 200, 219);
             target.FindKey(1, 2);
 
             Assert.IsNotNull(decryptDelegatePassedToKeyFinder);
@@ -108,13 +112,14 @@ namespace DecryptionUnitTests {
 
         [TestMethod]
         public void ShouldPassUpdateKeyDelegateToXORKeyFinder() {
+            var dummyKey = new byte[] { 23, 32, 42, 200, 219 };
             Action<byte[]> updateDelegatePassedToKeyFinder = null;
             xorKeyFinder.Stub(x => x.FindNextKeyAsync(null, s => s, b => { }))
                 .IgnoreArguments()
                 .WhenCalled(x => {
                     updateDelegatePassedToKeyFinder = x.Arguments[2] as Action<byte[]>;
                 })
-                .Return(null);
+                .Return(Task.FromResult<byte[]>(dummyKey));
 
             target.FindKey(1, 2);
 
